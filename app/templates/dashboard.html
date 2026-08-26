@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Welcome, {{ user.username }}!</h2>
+<p>Role: {{ user.role }}</p>
+<p>Go to <a href="{{ url_for('profile', user_id=user.id) }}">My Profile</a></p>
+{% endblock %}

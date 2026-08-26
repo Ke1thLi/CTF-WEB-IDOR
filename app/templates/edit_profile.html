@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Edit Profile</h2>
+<form method="POST">
+    <label>Full Name: <input type="text" name="full_name" value="{{ user.full_name or '' }}"></label><br>
+    <label>Email: <input type="email" name="email" value="{{ user.email or '' }}"></label><br>
+    <label>Department: <input type="text" name="department" value="{{ user.department or '' }}"></label><br>
+    <input type="submit" value="Update">
+</form>
+{% endblock %}
