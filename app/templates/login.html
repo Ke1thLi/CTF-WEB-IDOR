@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Login</h2>
+<h2>用户登录</h2>
 <form method="POST">
-    <input type="text" name="username" placeholder="Username" required><br>
-    <input type="password" name="password" placeholder="Password" required><br>
-    <input type="submit" value="Login">
+    <input type="text" name="username" placeholder="用户名" required><br>
+    <input type="password" name="password" placeholder="密码" required><br>
+    <input type="submit" value="登录">
 </form>
-<p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+<p>还没有账号？<a href="{{ url_for('register') }}">立即注册</a></p>
 {% endblock %}

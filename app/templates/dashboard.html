@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Welcome, {{ user.username }}!</h2>
-<p>Role: {{ user.role }}</p>
-<p>Go to <a href="{{ url_for('profile', user_id=user.id) }}">My Profile</a></p>
+<h2>欢迎回来，{{ user.username }}！</h2>
+<p>角色：{{ user.role }}</p>
+<p><a href="{{ url_for('profile', user_id=user.id) }}">查看我的资料</a></p>
 {% endblock %}

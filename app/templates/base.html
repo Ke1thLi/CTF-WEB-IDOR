@@ -3,17 +3,17 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Employee Info System</title>
+    <title>员工信息管理系统</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
     <nav>
-        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('dashboard') }}">仪表板</a>
         {% if session.user_id %}
-        <a href="{{ url_for('profile', user_id=session.user_id) }}">My Profile</a>
-        <a href="{{ url_for('edit_profile', user_id=session.user_id) }}">Edit Profile</a>
-        <a href="{{ url_for('logout') }}">Logout</a>
+        <a href="{{ url_for('profile', user_id=session.user_id) }}">我的资料</a>
+        <a href="{{ url_for('edit_profile', user_id=session.user_id) }}">编辑资料</a>
+        <a href="{{ url_for('logout') }}">退出登录</a>
         {% endif %}
     </nav>
     <div class="container">
