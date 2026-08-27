@@ -2,7 +2,7 @@ import os
 import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session, abort, g
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import get_user_by_id, get_user_by_username, create_user, update_user, get_admin_token
+from database import get_db_connection, get_user_by_id, get_user_by_username, create_user, update_user, get_admin_token
 from init_db import init_db
 
 app = Flask(__name__)
@@ -18,7 +18,10 @@ def login_required():
 def get_current_user():
     user_id = session.get('user_id')
     if user_id:
-        return get_user_by_id(user_id)
+        user = get_user_by_id(user_id)
+        if user is None:
+            session.clear()
+        return user
     return None
 
 # ---------- 路由 ----------
@@ -37,10 +40,9 @@ def register():
         email = request.form.get('email')
         department = request.form.get('department')
         if not username or not password:
-            return "Username and password required", 400
-        # 检查用户名是否存在
+            return "用户名和密码不能为空", 400
         if get_user_by_username(username):
-            return "Username already exists", 400
+            return "用户名已存在", 400
         hashed = generate_password_hash(password)
         create_user(username, hashed, full_name, email, department)
         return redirect(url_for('login'))
@@ -55,7 +57,7 @@ def login():
         if user and check_password_hash(user['password'], password):
             session['user_id'] = user['id']
             return redirect(url_for('dashboard'))
-        return "Invalid credentials", 401
+        return "用户名或密码错误", 401
     return render_template('login.html')
 
 @app.route('/logout')
@@ -69,6 +71,9 @@ def dashboard():
     if login_redirect:
         return login_redirect
     user = get_current_user()
+    if user is None:
+        session.clear()
+        return redirect(url_for('login'))
     return render_template('dashboard.html', user=user)
 
 @app.route('/profile/<int:user_id>')
@@ -87,7 +92,6 @@ def edit_profile(user_id):
     login_redirect = login_required()
     if login_redirect:
         return login_redirect
-    # 检查所有权
     if session['user_id'] != user_id:
         abort(403)
     user = get_current_user()
@@ -99,12 +103,37 @@ def edit_profile(user_id):
         return redirect(url_for('profile', user_id=user_id))
     return render_template('edit_profile.html', user=user)
 
+@app.route('/api/token', methods=['GET'])
+def get_token():
+    if 'user_id' not in session:
+        return {"error": "未登录"}, 401
+    
+    internal_id = request.args.get('uid')
+    if not internal_id:
+        return {"error": "缺少 uid 参数"}, 400
+    
+    conn = get_db_connection()
+    user = conn.execute(
+        'SELECT * FROM users WHERE internal_id = ?', 
+        (internal_id,)
+    ).fetchone()
+    conn.close()
+    
+    if not user:
+        return {"error": "无效的 internal_id"}, 404
+    
+    # 漏洞点：未检查当前用户是否有权获取该 internal_id 对应的 token
+    return {
+        "uid": user['internal_id'],
+        "username": user['username'],
+        "api_token": user['api_token']
+    }
+
 @app.route('/admin', methods=['GET'])
 def admin_panel():
     login_redirect = login_required()
     if login_redirect:
         return login_redirect
-    # 从请求头获取 token
     token = request.headers.get('X-Admin-Token')
     if not token:
         abort(403)

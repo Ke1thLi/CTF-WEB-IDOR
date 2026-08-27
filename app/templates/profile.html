@@ -6,9 +6,13 @@
 <p><strong>邮箱：</strong>{{ user.email or '未填写' }}</p>
 <p><strong>部门：</strong>{{ user.department or '未填写' }}</p>
 <p><strong>角色：</strong>{{ user.role }}</p>
-{% if user.api_token %}
-<p><strong>API 令牌：</strong>{{ user.api_token }}</p>
+
+{% if user.role == 'admin' %}
+<hr>
+<p><strong>内部 ID：</strong>{{ user.internal_id }}</p>
+<p><strong>提示：</strong>API 凭证服务位于 /api/token，需携带内部 ID 请求。</p>
 {% endif %}
+
 {% if session.user_id == user.id %}
 <a href="{{ url_for('edit_profile', user_id=user.id) }}">编辑资料</a>
 {% endif %}
