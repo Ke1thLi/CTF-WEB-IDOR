@@ -20,11 +20,25 @@ def get_user_by_username(username):
     conn.close()
     return user
 
+def get_user_by_internal_id(internal_id):
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE internal_id = ?', (internal_id,)).fetchone()
+    conn.close()
+    return user
+
 def create_user(username, password_hash, full_name, email, department):
     conn = get_db_connection()
-    conn.execute(
-        'INSERT INTO users (username, password, full_name, email, department, role) VALUES (?, ?, ?, ?, ?, ?)',
+    cursor = conn.cursor()
+    cursor.execute(
+        '''INSERT INTO users (username, password, full_name, email, department, role)
+           VALUES (?, ?, ?, ?, ?, ?)''',
         (username, password_hash, full_name, email, department, 'user')
+    )
+    user_id = cursor.lastrowid
+    internal_id = f"user-{str(user_id).zfill(3)}"
+    cursor.execute(
+        'UPDATE users SET internal_id = ? WHERE id = ?',
+        (internal_id, user_id)
     )
     conn.commit()
     conn.close()

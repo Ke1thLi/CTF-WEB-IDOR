@@ -6,11 +6,12 @@
 <p><strong>邮箱：</strong>{{ user.email or '未填写' }}</p>
 <p><strong>部门：</strong>{{ user.department or '未填写' }}</p>
 <p><strong>角色：</strong>{{ user.role }}</p>
+<p><strong>员工编号：</strong>{{ user.internal_id or '未分配' }}</p>
 
 {% if user.role == 'admin' %}
 <hr>
-<p><strong>内部 ID：</strong>{{ user.internal_id }}</p>
-<p><strong>提示：</strong>API 凭证服务位于 /api/token，需携带内部 ID 请求。</p>
+<p><strong>职位：</strong>系统管理员</p>
+<p><strong>入职时间：</strong>2024-01-15</p>
 {% endif %}
 
 {% if session.user_id == user.id %}

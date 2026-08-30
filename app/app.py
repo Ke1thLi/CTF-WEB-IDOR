@@ -1,12 +1,26 @@
 import os
-import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, session, abort, g
+import secrets
+from flask import Flask, render_template, request, redirect, url_for, session, abort
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import get_db_connection, get_user_by_id, get_user_by_username, create_user, update_user, get_admin_token
+from database import (
+    get_db_connection,
+    get_user_by_id,
+    get_user_by_username,
+    get_user_by_internal_id,
+    create_user,
+    update_user,
+    get_admin_token
+)
 from init_db import init_db
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'this-is-a-secret-key-for-session')
+
+# SECRET_KEY 强制从环境变量读取
+secret_key = os.environ.get("SECRET_KEY")
+if not secret_key:
+    raise RuntimeError("SECRET_KEY environment variable must be set")
+app.secret_key = secret_key
+
 FLAG = os.environ.get('FLAG', 'flag{test_flag}')
 
 # ---------- 辅助函数 ----------
@@ -108,25 +122,20 @@ def get_token():
     if 'user_id' not in session:
         return {"error": "未登录"}, 401
     
-    internal_id = request.args.get('uid')
-    if not internal_id:
+    uid = request.args.get('uid')
+    if not uid:
         return {"error": "缺少 uid 参数"}, 400
     
-    conn = get_db_connection()
-    user = conn.execute(
-        'SELECT * FROM users WHERE internal_id = ?', 
-        (internal_id,)
-    ).fetchone()
-    conn.close()
-    
+    user = get_user_by_internal_id(uid)
     if not user:
-        return {"error": "无效的 internal_id"}, 404
+        return {"error": "无效的员工编号"}, 404
     
-    # 漏洞点：未检查当前用户是否有权获取该 internal_id 对应的 token
+    # 漏洞点：未检查当前用户是否有权获取该 uid 对应的 token
+    # 任何登录用户都可以请求任意 internal_id 的 token
     return {
         "uid": user['internal_id'],
         "username": user['username'],
-        "api_token": user['api_token']
+        "api_token": user['api_token'] if user['api_token'] else None
     }
 
 @app.route('/admin', methods=['GET'])

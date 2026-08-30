@@ -44,3 +44,34 @@ input[type="submit"] {
     padding: 0.7em 2em;
     cursor: pointer;
 }
+
+input[type="submit"]:hover {
+    background: #555;
+}
+
+.api-token-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.api-token-section button {
+    background: #0066cc;
+    color: white;
+    border: none;
+    padding: 0.7em 2em;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.api-token-section button:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+.api-token-section code {
+    background: #eee;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 14px;
+}

@@ -3,4 +3,62 @@
 <h2>欢迎回来，{{ user.username }}！</h2>
 <p>角色：{{ user.role }}</p>
 <p><a href="{{ url_for('profile', user_id=user.id) }}">查看我的资料</a></p>
+
+<hr>
+
+<div class="api-token-section">
+    <h3>API 令牌管理</h3>
+    <p>获取您的 API 访问令牌，用于第三方系统集成。</p>
+    <button id="getTokenBtn">获取 API 令牌</button>
+    <div id="tokenResult"
+        style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px; display: none;"></div>
+</div>
+
+<script>
+    document.getElementById('getTokenBtn').addEventListener('click', function () {
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = '请求中...';
+
+        const resultDiv = document.getElementById('tokenResult');
+        resultDiv.style.display = 'block';
+        resultDiv.textContent = '加载中...';
+
+        const uid = '{{ user.internal_id or "" }}';
+        if (!uid) {
+            resultDiv.textContent = '错误：未能获取您的员工编号，请重新登录。';
+            btn.disabled = false;
+            btn.textContent = '获取 API 令牌';
+            return;
+        }
+
+        fetch('/api/token?uid=' + encodeURIComponent(uid))
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || '请求失败');
+                    }).catch(() => {
+                        throw new Error('请求失败，状态码：' + response.status);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.api_token) {
+                    resultDiv.innerHTML = '<strong>您的 API 令牌：</strong><br><code style="word-break: break-all;">' + data.api_token + '</code>';
+                } else if (data.error) {
+                    resultDiv.textContent = '错误：' + data.error;
+                } else {
+                    resultDiv.textContent = '未获取到令牌，请确认您有权限申请。';
+                }
+            })
+            .catch(error => {
+                resultDiv.textContent = '请求失败：' + error.message;
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = '获取 API 令牌';
+            });
+    });
+</script>
 {% endblock %}

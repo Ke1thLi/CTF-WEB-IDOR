@@ -27,14 +27,19 @@ def init_db():
     admin = cursor.execute('SELECT * FROM users WHERE username = "admin"').fetchone()
     if not admin:
         token = secrets.token_hex(16)
-        hashed = generate_password_hash('Adm1n@EIS#2026_Secure')
+        # 随机生成管理员密码，不输出
+        admin_password = secrets.token_urlsafe(24)
+        hashed = generate_password_hash(admin_password)
         cursor.execute(
             '''INSERT INTO users 
                (username, password, role, api_token, internal_id, full_name, email, department)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-            ('admin', hashed, 'admin', token, 'admin-001', '系统管理员', 'admin@company.com', '技术部')
+            ('admin', hashed, 'admin', token, 'admin-001', '张明', 'zhangming@company.com', '技术部')
         )
         conn.commit()
-        print("[+] Admin created with internal_id: admin-001")
-        print("[+] API Token: " + token + " (可通过 API 获取)")
+        # 不输出 token 和密码，仅提示初始化成功
+        print("[+] Database initialized successfully.")
+    else:
+        print("[+] Database already initialized.")
+    
     conn.close()

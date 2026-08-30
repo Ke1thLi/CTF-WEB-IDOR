@@ -52,26 +52,30 @@ docker-compose down
 ```
 ## 环境变量
 
-| 变量名        | 说明                 | 默认值             |
-| ---------- | ------------------ | --------------- |
-| FLAG       | 最终要获得的 Flag 字符串    | flag{test_flag} |
-| SECRET_KEY | Flask Session 加密密钥 | 固定值（建议生产环境修改）   |
+|变量名|说明|是否必须|
+|---|---|---|
+|FLAG|最终要获得的 Flag 字符串|否（默认 flag{test_flag}）|
+|SECRET_KEY|Flask Session 加密密钥|**是（必须设置）**|
 
-数据库（SQLite）会在容器首次启动时自动初始化，并创建管理员账户：
-
-用户名：admin
-
-密码：Adm1n@EIS#2026_Secure（哈希存储，攻击过程中不需要）
-
-同时会生成一个随机的 api_token（32 位十六进制）和一个 internal_id（值为 admin-001）
+**重要**：`SECRET_KEY` 必须通过环境变量显式设置，否则应用启动时会报错并退出。部署到 GZCTF 时，请确保平台为该 Challenge 注入 `SECRET_KEY` 环境变量。
 
 ## 题目逻辑概要
 
 普通用户注册登录后可查看 /profile/<id> 和编辑自己的资料。
 
-管理员账户预置，普通用户可通过 IDOR 访问 /profile/1 获取管理员的 api_token。
+系统为每个用户分配一个员工编号（如 user-002）。
 
-使用该 token 作为请求头 X-Admin-Token 访问 /admin 即可获得 Flag。
+通过观察 URL 中的数字 ID，可尝试访问 /profile/1 获取管理员资料。
+
+管理员资料中包含员工编号 admin-001 和职位信息。
+
+仪表板中提供“API 令牌管理”功能，用于获取当前用户的 API 令牌。
+
+该功能向 /api/token?uid=<员工编号> 发起请求，但未校验请求者是否有权获取指定员工编号的令牌。
+
+将 uid 参数改为 admin-001 可获取管理员的 API 令牌。
+
+使用该令牌作为请求头 X-Admin-Token 访问 /admin 即可获得 Flag。
 
 ## 部署到 GZCTF
 
